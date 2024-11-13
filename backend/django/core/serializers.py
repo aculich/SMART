@@ -12,6 +12,7 @@ from core.models import (
     IRRLog,
     Label,
     LabelChangeLog,
+    MetaData,
     Model,
     Profile,
     Project,
@@ -73,8 +74,16 @@ class LabelSerializer(serializers.ModelSerializer):
         return base_representation
 
 
+class MetaDataSerializer(serializers.ModelSerializer):
+    field_name = serializers.CharField(source="metadata_field.field_name")
+
+    class Meta:
+        model = MetaData
+        fields = ["field_name", "value"]
+
+
 class DataSerializer(serializers.ModelSerializer):
-    metadata = serializers.StringRelatedField(many=True, read_only=True)
+    metadata = MetaDataSerializer(many=True, read_only=True)
 
     class Meta:
         model = Data

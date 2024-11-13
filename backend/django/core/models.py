@@ -230,6 +230,8 @@ class MetaData(models.Model):
     value = models.TextField(null=True, blank=True)
 
     def __str__(self):
+        if self.value is None:
+            return f"{str(self.metadata_field)}: "
         return f"{str(self.metadata_field)}: {self.value}"
 
 

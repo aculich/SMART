@@ -12,7 +12,7 @@ const DataCardMetadata = ({ card }) => {
 
     const [edit, setEdit] = useState(false);
     const [originalMetadata, setOriginalMetadata] = useState((card.metadata || card.text["metadata"]).reduce((a, b) => {
-        const [key, value] = b.split(': ');
+        const [key, value] = b.replace(": ",":").split(':');
         a[key] = value;
         return a;
     }, {}));

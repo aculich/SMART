@@ -8,19 +8,14 @@ import { GrayBox, H4 } from "../ui";
 const DataCardMetadata = ({ cardData, showEdit }) => {
     const { dataID, metadata: initialMetadata } = cardData;
     const { mutate } = useMetadataValue();
-    const parseMetadata = (md) => md.reduce((a, b) => {
-        const [key, value] = b.split(': ');
-        a[key] = value;
-        return a;
-    }, {});
     const [edit, setEdit] = useState(false);
 
-    const [originalMetadata, setOriginalMetadata] = useState(parseMetadata(initialMetadata));
+    const [originalMetadata, setOriginalMetadata] = useState(initialMetadata);
     const [metadata, setMetadata] = useState(originalMetadata || []);
 
     useEffect(() => {
-        setOriginalMetadata(parseMetadata(initialMetadata));
-        setMetadata(parseMetadata(initialMetadata) || []);
+        setOriginalMetadata(initialMetadata);
+        setMetadata(initialMetadata || []);
     }, [initialMetadata]);
 
     const handleSubmit = (event) => {
