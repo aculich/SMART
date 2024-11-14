@@ -43,29 +43,11 @@ class RecycleBin extends React.Component {
         this.props.getDiscarded();
     }
 
-    getText(row) {
-        if (row.row["metadata"].length == 0) {
-            return <p></p>;
-        } else {
-            return (
-                <div>
-                    <u>Respondent Data</u>
-                    {row.row["metadata"].map(val => (
-                        <p key={val}>{val}</p>
-                    ))}
-                    <u>Text to Label</u>
-                </div>
-            );
-        }
-    }
-
     getSubComponent(row) {
         const { restoreData } = this.props;
 
         return (
             <div className="sub-row">
-                {this.getText(row)}
-                <p id="disc_text">{row.row.data}</p>
                 <DataCard 
                     data={row.original}
                     page={PAGES.RECYCLE}
