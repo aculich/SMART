@@ -96,15 +96,19 @@ def get_assignments(profile, project, num_assignments):
         for i in range(num_assignments):
             # if there is IRR, with some probability get an IRR item
             rand_choice = randrange(0, 101)
+
+            assigned_datum = None
             if project.percentage_irr > 0 and rand_choice <= project.percentage_irr:
                 assigned_datum = assign_datum(profile, project, type="irr")
                 if assigned_datum is None:
                     # no irr data found
                     assigned_datum = assign_datum(profile, project)
-            else:
+
+            # if we didn't assign an IRR data for some reason, check non-irr
+            if assigned_datum is None and project.percentage_irr < 100:
                 # get normal data
                 assigned_datum = assign_datum(profile, project)
-                if assigned_datum is None:
+                if assigned_datum is None and project.percentage_irr > 0:
                     # no non-irr data found so checking for irr
                     assigned_datum = assign_datum(profile, project, type="irr")
             if assigned_datum is None:
