@@ -79,12 +79,17 @@ class SearchLabelsView(ListAPIView):
         filter_text = self.request.GET.get("searchString")
 
         label_category = self.request.GET.get("category")
-        if label_category and label_category != "all":
-            if label_category == "None":
-                category_label_list = LabelMetaData.objects.filter(
-                    label_metadata_field=project.category.label_metadata_field,
-                    value="nan",
-                ).values_list("label__pk", flat=True)
+        if hasattr(project, "category") and label_category != "all":
+            if label_category == "None" or label_category == "":
+                category_label_list = (
+                    LabelMetaData.objects.filter(
+                        label_metadata_field=project.category.label_metadata_field
+                    )
+                    .filter(
+                        Q(value__isnull=True) | Q(value="nan"),
+                    )
+                    .values_list("label__pk", flat=True)
+                )
             else:
                 category_label_list = LabelMetaData.objects.filter(
                     label_metadata_field=project.category.label_metadata_field,
@@ -200,9 +205,13 @@ def get_card_deck(request, project_pk):
     # shuffle so the irr is not all at the front
     random.shuffle(data)
 
+    data = DataSerializer(data, many=True).data
+    for d in data:
+        d["metadata"] = {c["field_name"]: str(c["value"] or "") for c in d["metadata"]}
+
     return Response(
         {
-            "data": DataSerializer(data, many=True).data,
+            "data": data,
         }
     )
 
@@ -732,7 +741,11 @@ def data_unlabeled_table(request, project_pk):
     unlabeled_data = unlabeled_data[:50]
     serialized_data = DataSerializer(unlabeled_data, many=True).data
     data = [
-        {"Text": d["text"], "metadata": d["metadata"], "ID": d["pk"]}
+        {
+            "Text": d["text"],
+            "metadata": {c["field_name"]: str(c["value"] or "") for c in d["metadata"]},
+            "ID": d["pk"],
+        }
         for d in serialized_data
     ]
     return Response({"data": data})
@@ -867,7 +880,10 @@ def data_admin_table(request, project_pk):
         potentialMessage = [x for x in messages if x["data_id"] == d.data.id]
         temp = {
             "Text": serialized_data["text"],
-            "metadata": serialized_data["metadata"],
+            "metadata": {
+                c["field_name"]: str(c["value"] or "")
+                for c in serialized_data["metadata"]
+            },
             "ID": d.data.id,
             "Reason": reason,
             "message": None if not potentialMessage else potentialMessage[0]["message"],
@@ -921,7 +937,10 @@ def recycle_bin_table(request, project_pk):
         serialized_data = DataSerializer(d.data, many=False).data
         temp = {
             "Text": serialized_data["text"],
-            "metadata": serialized_data["metadata"],
+            "metadata": {
+                c["field_name"]: str(c["value"] or "")
+                for c in serialized_data["metadata"]
+            },
             "ID": d.data.id,
         }
         data.append(temp)
@@ -1210,8 +1229,9 @@ def get_label_history(request, project_pk):
     page_data = DataSerializer(page_data, many=True).data
     # derive the metadata fields in the forms needed for the table
     page_metadata = [c.popitem("metadata")[1] for c in page_data]
+    # for each value, the column is everything up to the first : and the value is everything after
     page_metadata_formatted = [
-        {c.split(":")[0].replace(" ", "_"): c.split(":")[1] for c in inner_list}
+        {c["field_name"]: str(c["value"] or "") for c in inner_list}
         for inner_list in page_metadata
     ]
 
@@ -1229,8 +1249,7 @@ def get_label_history(request, project_pk):
 
     data_df = pd.merge(data_df, data_types_df, on="id")
     data_df["metadataIDs"] = page_data_metadata_ids
-    data_df["metadata"] = page_metadata
-    data_df["formattedMetadata"] = page_metadata_formatted
+    data_df["metadata"] = page_metadata_formatted
 
     # get the labeled data into the correct format for returning
     label_dict = {label.pk: label.name for label in labels}
@@ -1336,7 +1355,6 @@ def get_label_history(request, project_pk):
 
     # TODO: annotate uses pk while everything else uses ID. Let's fix this
     data_df["pk"] = data_df["id"]
-
     results = data_df.fillna("").to_dict(orient="records")
 
     return Response(
@@ -1364,10 +1382,21 @@ def modify_metadata_values(request, data_pk):
         {}
     """
     data = Data.objects.get(pk=data_pk)
-    metadata = MetaData.objects.filter(data_id=data.id)
+    metadata_list = MetaData.objects.filter(data_id=data.id)
     metadatas = request.data["metadatas"]
     for m in metadatas:
-        metadata = MetaData.objects.get(data_id=data.id, value=m["previous"])
-        metadata.value = m["value"]
+        if "previous" not in m.keys() or m["previous"] == "":
+            metadata = metadata_list.get(
+                metadata_field__field_name=m["key"], value__isnull=True
+            )
+        else:
+            metadata = metadata_list.get(
+                metadata_field__field_name=m["key"], value=m["previous"]
+            )
+
+        if m["value"] == "":
+            metadata.value = None
+        else:
+            metadata.value = m["value"]
         metadata.save()
     return Response({})

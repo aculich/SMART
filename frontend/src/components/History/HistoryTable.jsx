@@ -115,8 +115,8 @@ const HistoryTable = () => {
     const metadataColumnsAccessorKeys = [];
     if (historyData) {
         historyData.data.forEach((data) => {
-            if (data.formattedMetadata)
-                Object.keys(data.formattedMetadata).forEach((metadataColumn) =>
+            if (data.metadata)
+                Object.keys(data.metadata).forEach((metadataColumn) =>
                     !metadataColumnsAccessorKeys.includes(metadataColumn) ? metadataColumnsAccessorKeys.push(metadataColumn) : null
                 );
         });
@@ -176,7 +176,7 @@ const HistoryTable = () => {
     const table = useReactTable({
         columns: [...defaultColumns.first, ...metadataColumnsAccessorKeys.map((column) => {
             return {
-                accessorKey: `formattedMetadata.${column}`,
+                accessorKey: `metadata.${column}`,
                 filterFn: "includesString",
                 header: () => (
                     <OverlayTrigger

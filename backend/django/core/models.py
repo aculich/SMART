@@ -230,6 +230,8 @@ class MetaData(models.Model):
     value = models.TextField(null=True, blank=True)
 
     def __str__(self):
+        if self.value is None:
+            return f"{str(self.metadata_field)}: "
         return f"{str(self.metadata_field)}: {self.value}"
 
 
@@ -416,10 +418,12 @@ class LabelMetaDataField(models.Model):
         return self.field_name
 
     def get_unique_options(self):
-        unique_list = list(
-            set(self.labelmetadata_set.all().values_list("value", flat=True))
+        unique_list = (
+            self.labelmetadata_set.all()
+            .order_by("value")
+            .values_list("value", flat=True)
+            .distinct()
         )
-        unique_list.sort()
         return unique_list
 
 
