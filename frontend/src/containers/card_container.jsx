@@ -20,7 +20,7 @@ const CardContainer = (props) => {
             <DataCard 
                 data={{ ...props.cards[0], num_cards_left: props.cards.length }}
                 page={PAGES.ANNOTATE_DATA} 
-                actions={{ onSelectLabel: props.annotateCard, onAdjudicate: props.passCard, onSkip: props.unassignCard }} /> : null
+                actions={{ onSelectLabel: props.annotateCard, onAdjudicate: props.passCard, onSkip: props.unassignCard }} /> : <p>Available data for coding will populate here. If nothing appears after a minute or so then either your project has no data left to code or all data is currently being worked on by other coders.</p>
     );
 };
 

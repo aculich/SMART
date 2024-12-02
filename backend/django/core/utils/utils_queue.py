@@ -306,12 +306,23 @@ def pop_first_nonempty_queue(project, profile=None, type="normal"):
                 .exclude(data__in=skipped_data)
             )
 
+            final_data = []
+            for d in assigned_unlabeled:
+                # for each data item, need to check if the count of other assignments+labels+logs exceeds num_irr, don't return
+                if (
+                    DataLabel.objects.filter(data=d.data).count()
+                    + IRRLog.objects.filter(data=d.data).count()
+                    + AssignedData.objects.filter(data=d.data).count()
+                    < project.num_users_irr
+                ):
+                    final_data.append(d)
+
             # if there are no elements, return none
-            if len(assigned_unlabeled) == 0:
+            if len(final_data) == 0:
                 return (None, None)
             else:
                 # else, get the first element off the group and return it
-                datum = Data.objects.get(pk=assigned_unlabeled[0].data.pk)
+                datum = Data.objects.get(pk=final_data[0].data.pk)
                 return (queue, datum)
     if len(eligible_queue_ids) == 0:
         return (None, None)

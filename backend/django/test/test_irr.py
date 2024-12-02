@@ -79,8 +79,9 @@ def test_annotate_irr(
     datum2 = assign_datum(test_profile2, project, "irr")
     assert datum.pk == datum2.pk
 
+    # since this is a 2-label IRR project, we shouldn't get the same item assigned to profile 3
     datum3 = assign_datum(test_profile3, project, "irr")
-    assert datum.pk == datum3.pk
+    assert datum.pk != datum3.pk
 
     # let other user label the same datum. It should now be in datatable with
     # creater=profile, be in IRRLog (twice), not be in IRRQueue
@@ -90,25 +91,19 @@ def test_annotate_irr(
     assert IRRLog.objects.filter(data=datum2).count() == 2
     assert DataQueue.objects.filter(data=datum2, queue=irr_queue).count() == 0
 
-    # let a third user label the first data something else. It should be in
-    # IRRLog but not overwrite the label from before
-    label_data(test_labels_half_irr[0], datum3, test_profile3, 3)
-    assert IRRLog.objects.filter(data=datum3).count() == 3
-    assert DataLabel.objects.filter(data=datum3).count() == 1
-    assert DataLabel.objects.get(data=datum3).profile.pk == project.creator.pk
+    # now assign a new item to the first profile. It should be the same as datum3
+    second_datum = assign_datum(test_profile, project, "irr")
 
+    # should be a new datum
+    assert datum3.pk == second_datum.pk
     # let two users disagree on a datum. It should be in the admin queue,
     # not in irr queue, not in datalabel, in irrlog twice
-    second_datum = assign_datum(test_profile, project, "irr")
-    # should be a new datum
-    assert datum.pk != second_datum.pk
-    second_datum2 = assign_datum(test_profile2, project, "irr")
     label_data(test_labels_half_irr[0], second_datum, test_profile, 3)
-    label_data(test_labels_half_irr[1], second_datum2, test_profile2, 3)
-    assert DataQueue.objects.filter(data=second_datum2, queue=admin_queue).count() == 1
-    assert DataQueue.objects.filter(data=second_datum2, queue=irr_queue).count() == 0
-    assert DataLabel.objects.filter(data=second_datum2).count() == 0
-    assert IRRLog.objects.filter(data=second_datum2).count() == 2
+    label_data(test_labels_half_irr[1], datum3, test_profile3, 3)
+    assert DataQueue.objects.filter(data=datum3, queue=admin_queue).count() == 1
+    assert DataQueue.objects.filter(data=datum3, queue=irr_queue).count() == 0
+    assert DataLabel.objects.filter(data=datum3).count() == 0
+    assert IRRLog.objects.filter(data=datum3).count() == 2
 
 
 def test_skip_irr(
@@ -158,15 +153,16 @@ def test_skip_irr(
     assert second_datum.pk != datum.pk
     assert second_datum.pk == second_datum2.pk
     second_datum3 = assign_datum(test_profile3, project, "irr")
-    assert second_datum2.pk == second_datum3.pk
+    assert second_datum2.pk != second_datum3.pk
 
     label_data(test_labels_half_irr[0], second_datum, test_profile, 3)
     label_data(test_labels_half_irr[0], second_datum2, test_profile2, 3)
     skip_data(second_datum3, test_profile3)
     assert DataQueue.objects.filter(data=second_datum3, queue=admin_queue).count() == 0
-    assert DataQueue.objects.filter(data=second_datum3, queue=irr_queue).count() == 0
-    assert IRRLog.objects.filter(data=second_datum3).count() == 3
-    assert DataLabel.objects.filter(data=second_datum3).count() == 1
+    assert DataQueue.objects.filter(data=second_datum3, queue=irr_queue).count() == 1
+    assert IRRLog.objects.filter(data=second_datum3).count() == 1
+    assert IRRLog.objects.filter(data=second_datum2).count() == 2
+    assert DataLabel.objects.filter(data=second_datum2).count() == 1
 
 
 def test_queue_refill(
