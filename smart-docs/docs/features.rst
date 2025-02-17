@@ -164,7 +164,6 @@ The general formula is:
 
 Where ``N`` is the number of data points, ``k`` represents the number of possible labels, ``l`` is the number of labels for each piece of data, and ``n`` is a matrix of data points by the number of votes per label [#fleisswiki]_.
 
-
 .. _fix-skew:
 
 Fix Skewed Label Distributions
@@ -174,7 +173,39 @@ In many applied settings, the distribution of categories the user may be interes
 
 See :ref:`fixskew` for more information on using this feature.
 
+.. _keyboard-shortcuts:
 
+Keyboard Shortcuts
+-----------------
+
+SMART provides keyboard shortcuts to enhance user productivity during the annotation process. These shortcuts allow users to quickly navigate between tabs, perform common actions, and access help information without using the mouse.
+
+Available Shortcuts
+******************
+
+Navigation
+~~~~~~~~~~
+* ``n`` - Go to Annotate Data tab
+* ``h`` - Go to History tab
+* ``w`` - Go to Fix Skew tab (Admin only)
+* ``m`` - Go to Admin tab (Admin only)
+
+Card Actions
+~~~~~~~~~~~
+* ``a`` - Open adjudicate modal for current card
+* ``s`` - Skip current card
+* ``1-5`` - Select labels 1-5 (when 5 or fewer labels are available)
+* ``Ctrl+Enter`` or ``Cmd+Enter`` - Submit adjudicate form when modal is open
+
+Help
+~~~~
+* ``?`` or ``Cmd+/`` - Show keyboard shortcuts help
+
+|keyboard-shortcuts-modal|
+
+The keyboard shortcuts modal can be accessed at any time by pressing ``?`` or ``Cmd+/``. The modal displays all available shortcuts and their descriptions. You can close the modal by pressing ``Esc`` or clicking outside the modal.
+
+.. |keyboard-shortcuts-modal| image:: ./nstatic/img/smart-keyboard-shortcuts-modal.png
 
 .. [#settles] Settles, B. (2012). Active learning. Synthesis Lectures on Artificial Intelligence and Machine Learning, 6(1), 1-114.
 

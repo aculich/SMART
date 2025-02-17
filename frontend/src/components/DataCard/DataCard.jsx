@@ -1,5 +1,6 @@
 import React, { Fragment, useState, useEffect } from "react";
 import { Card, ButtonToolbar } from "react-bootstrap";
+import { useHotkeys } from "react-hotkeys-hook";
 
 import DataCardAdjudicateButton from "./DataCardAdjudicateButton";
 import DataCardSkipButton from "./DataCardSkipButton";
@@ -12,9 +13,11 @@ import DataCardLabelButtons from "./DataCardLabelButtons";
 import DataCardDiscardButton from "./DataCardDiscardButton";
 import { PROJECT_SUGGESTION_MAX } from "../../store";
 import Select from 'react-select';
+import { SHORTCUTS, logKeyPress } from '../../utils/keyboardShortcuts';
 
 const DataCard = ({ data, page, actions }) => {
     const { data: labels } = useLabels();
+    const [isAdjudicateModalOpen, setIsAdjudicateModalOpen] = useState(false);
 
     const { mutate: changeToSkip } = useChangeToSkip();
     const { mutate: modifyLabel } = useModifyLabel();
@@ -39,8 +42,27 @@ const DataCard = ({ data, page, actions }) => {
         setSelectedCategory(parseLabelCategoryOptions(labelCategoryOptions));
     }, [labelCategoryOptions]);
 
-
     const handlers = getHandlers(allHandlers, page);
+
+    // Add keyboard shortcuts for skip and adjudicate
+    useHotkeys(SHORTCUTS.SKIP.key, (event) => {
+        event.preventDefault();
+        if (handlers.handleSkip) {
+            logKeyPress(SHORTCUTS.SKIP.key, SHORTCUTS.SKIP.description);
+            handlers.handleSkip(cardData);
+        }
+    }, [handlers.handleSkip, cardData]);
+
+    useHotkeys(SHORTCUTS.ADJUDICATE.key, (event) => {
+        event.preventDefault();
+        if (handlers.handleAdjudicate && 
+            (page === PAGES.ANNOTATE_DATA || page === PAGES.HISTORY) && 
+            cardData && 
+            cardData.dataID) {
+            logKeyPress(SHORTCUTS.ADJUDICATE.key, SHORTCUTS.ADJUDICATE.description);
+            setIsAdjudicateModalOpen(true);
+        }
+    }, [handlers.handleAdjudicate, cardData, page]);
 
     const labelCountLow = (labels) => labels.total_labels <= 5;
     const labelCountHigh = (labels) => labels.total_labels >= PROJECT_SUGGESTION_MAX;
@@ -64,16 +86,18 @@ const DataCard = ({ data, page, actions }) => {
     return (
         <Card className="d-flex flex-column m-0 p-3" style={{ gap: "1rem", maxWidth: "992px" }}>
             <div className="align-items-end d-flex justify-content-end mb-n2">
-                { show.skipButton && (
-                    <DataCardSkipButton 
-                        cardData={cardData}
-                        fn={handlers.handleSkip}
-                    />
-                )}
                 { show.adjudicateButton && (
                     <DataCardAdjudicateButton
                         cardData={cardData}
                         fn={handlers.handleAdjudicate}
+                        isOpenExternal={isAdjudicateModalOpen}
+                        setIsOpenExternal={setIsAdjudicateModalOpen}
+                    />
+                )}
+                { show.skipButton && (
+                    <DataCardSkipButton 
+                        cardData={cardData}
+                        fn={handlers.handleSkip}
                     />
                 )}
             </div>
@@ -92,8 +116,12 @@ const DataCard = ({ data, page, actions }) => {
                         show={show.discardButton} 
                     />
                 </ButtonToolbar>   
-
             )}
+            <div className="d-flex justify-content-end">
+                <div className="text-muted small mb-2">
+                    Press <kbd>?</kbd> or <kbd>Cmd+/</kbd> to view keyboard shortcuts
+                </div>
+            </div>
             {show.labelSuggestions && (
                 <Fragment>
                     <DataCardSuggestedLabels

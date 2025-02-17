@@ -22,8 +22,13 @@ Annotate Data Page
 
 The Annotate Data tab is where most users will spend a majority of their time. When you enter this page, SMART will pass you a portion of the current batch as a deck of "cards", to be presented to you one at a time. You can then choose one of two actions:
 
-* *label*: Assign a label to the piece of data by clicking on the button corresponding to the desired label. If the data is not being used for :ref:`irr`, then this data will be marked as labeled and removed from the pool of unlabeled data. If data is IRR, then it may still be presented to additional coders on the project, but will not be presented to you again.
-* *skip*: Skip the data. This option is used when you are unsure of what label to choose. Skipped data that is not IRR is sent to the Admin Annotation page to be reviewed by any user with admin privileges.
+* *label*: Assign a label to the piece of data by clicking on the button corresponding to the desired label, or using number keys 1-5 for quick selection when 5 or fewer labels are available. If the data is not being used for :ref:`irr`, then this data will be marked as labeled and removed from the pool of unlabeled data. If data is IRR, then it may still be presented to additional coders on the project, but will not be presented to you again.
+* *skip*: Skip the data using the Skip button or by pressing the ``s`` key. This option is used when you are unsure of what label to choose. Skipped data that is not IRR is sent to the Admin Annotation page to be reviewed by any user with admin privileges.
+* *adjudicate*: Send the data to an administrator for review by clicking the Adjudicate button or pressing the ``a`` key. This will open a modal dialog where you can enter your reasons for requesting adjudication. In the modal, you can:
+    * Submit your message using ``Ctrl+Enter`` or ``Cmd+Enter`` (on macOS)
+    * Cancel and close the modal using the ``Esc`` key
+
+For faster navigation and annotation, SMART provides keyboard shortcuts for common actions. Press ``?`` or ``Cmd+/`` to view all available shortcuts. See :ref:`keyboard-shortcuts` for more details.
 
 |annotate-cards|
 
